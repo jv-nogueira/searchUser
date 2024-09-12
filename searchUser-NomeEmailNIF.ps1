@@ -9,7 +9,7 @@ function Create-GUI {
     # Criar a janela principal (form)
     $form = New-Object System.Windows.Forms.Form
     $form.Text = "Pesquisa de Usuários AD"
-    $form.Size = New-Object System.Drawing.Size(600,550)
+    $form.Size = New-Object System.Drawing.Size(450,500)
 
     # Criar uma TextBox para entrada de NIF, Email ou Nome Completo
     $textBoxNIF = New-Object System.Windows.Forms.TextBox
@@ -18,24 +18,17 @@ function Create-GUI {
     $textBoxNIF.Text = "Digite o NIF, Email ou Nome Completo"
     $form.Controls.Add($textBoxNIF)
 
-    # Criar um botão para pesquisar
-    $buttonPesquisar = New-Object System.Windows.Forms.Button
-    $buttonPesquisar.Location = New-Object System.Drawing.Point(340,20)
-    $buttonPesquisar.Size = New-Object System.Drawing.Size(75,23)
-    $buttonPesquisar.Text = "Procurar"
-    $form.Controls.Add($buttonPesquisar)
-
     # Criar um botão para copiar os resultados
     $buttonCopiar = New-Object System.Windows.Forms.Button
-    $buttonCopiar.Location = New-Object System.Drawing.Point(420,20)
-    $buttonCopiar.Size = New-Object System.Drawing.Size(75,23)
+    $buttonCopiar.Location = New-Object System.Drawing.Point(330,20)
+    $buttonCopiar.Size = New-Object System.Drawing.Size(75,20) # largura / altura
     $buttonCopiar.Text = "Copiar"
     $form.Controls.Add($buttonCopiar)
 
     # Criar um painel para exibir os resultados
     $panelResultados = New-Object System.Windows.Forms.Panel
     $panelResultados.Location = New-Object System.Drawing.Point(20,60)
-    $panelResultados.Size = New-Object System.Drawing.Size(540,300)
+    $panelResultados.Size = New-Object System.Drawing.Size(400,300)  # Ajustado até o botão de copiar
     $panelResultados.BorderStyle = [System.Windows.Forms.BorderStyle]::Fixed3D
     $panelResultados.AutoScroll = $true
     $form.Controls.Add($panelResultados)
@@ -43,15 +36,15 @@ function Create-GUI {
     # Criar uma label para perguntar sobre a redefinição de senha
     $labelResetSenha = New-Object System.Windows.Forms.Label
     $labelResetSenha.Location = New-Object System.Drawing.Point(20,380)
-    $labelResetSenha.Size = New-Object System.Drawing.Size(300,20)
+    $labelResetSenha.Size = New-Object System.Drawing.Size(250,20)
     $labelResetSenha.Text = "Deseja resetar a senha dos NIFs encontrados?"
     $form.Controls.Add($labelResetSenha)
 
     # Criar um botão para redefinir a senha
     $buttonReset = New-Object System.Windows.Forms.Button
-    $buttonReset.Location = New-Object System.Drawing.Point(340,380)
-    $buttonReset.Size = New-Object System.Drawing.Size(75,23)
-    $buttonReset.Text = "Resetar Senha"
+    $buttonReset.Location = New-Object System.Drawing.Point(280,380)
+    $buttonReset.Size = New-Object System.Drawing.Size(75,20)
+    $buttonReset.Text = "Reset"
     $form.Controls.Add($buttonReset)
 
 
@@ -112,11 +105,6 @@ function Create-GUI {
         }
     }
 
-    # Executar pesquisa ao clicar no botão "Procurar"
-    $buttonPesquisar.Add_Click({
-        ExibirResultados
-    })
-
     # Adicionar evento de pressionar Enter na TextBox para pesquisar
     $textBoxNIF.Add_KeyDown({
         param($sender, $e)
@@ -126,7 +114,7 @@ function Create-GUI {
         }
     })
 
-    # Função para redefinir a senha
+    # Função para redefinir a senha com mensagem de confirmação
     $buttonReset.Add_Click({
         $resetarSenha = [System.Windows.Forms.MessageBox]::Show("Deseja resetar a senha?", "Confirmação", [System.Windows.Forms.MessageBoxButtons]::YesNo)
         if ($resetarSenha -eq [System.Windows.Forms.DialogResult]::Yes) {
@@ -149,7 +137,7 @@ function Create-GUI {
                 $resultadoTexto += $control.Text + "`n`n"
             }
         }
-
+        [System.Windows.Forms.Clipboard]::SetText($resultadoTexto)  # Função de copiar 
     })
 
     # Exibir a janela
