@@ -6,62 +6,73 @@ function Create-GUI {
     [void][System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
     [void][System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
 
-    # Criar a janela principal (form)
+    # Janela principal (form)
     $form = New-Object System.Windows.Forms.Form
     $form.Text = "Pesquisa de Usuários AD"
-    $form.Size = New-Object System.Drawing.Size(450,500)
+    $form.Size = New-Object System.Drawing.Size(360,500) #340 de largura total
+    $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedSingle
+    $form.MaximizeBox = $false  # Desabilitar o botão de maximizar
+    $form.StartPosition = [System.Windows.Forms.FormStartPosition]::CenterScreen
 
-    # Criar uma TextBox para entrada de NIF, Email ou Nome Completo
+    # TextBox para entrada de NIF, Email ou Nome Completo
     $textBoxNIF = New-Object System.Windows.Forms.TextBox
-    $textBoxNIF.Location = New-Object System.Drawing.Point(20,20)
-    $textBoxNIF.Size = New-Object System.Drawing.Size(300,20)
+    $textBoxNIF.Location = New-Object System.Drawing.Point(20,20) # 20p depois da borda
+    $textBoxNIF.Size = New-Object System.Drawing.Size(310,20) # 300p de largura
     $textBoxNIF.Text = "Digite o NIF, Email ou Nome Completo"
     $form.Controls.Add($textBoxNIF)
 
-    # Criar um botão para copiar os resultados
+    # Painel para exibir os resultados
+    $panelResultados = New-Object System.Windows.Forms.TextBox
+    $panelResultados.Location = New-Object System.Drawing.Point(20,60)
+    $panelResultados.Size = New-Object System.Drawing.Size(310,300)  # Ajustado até o botão de copiar
+    $panelResultados.BorderStyle = [System.Windows.Forms.BorderStyle]::Fixed3D
+
+    $panelResultados.ReadOnly = $true         # Tornar a caixa de texto somente leitura, mas ainda copiável
+    $panelResultados.Multiline = $true        # Permite múltiplas linhas
+    $form.Controls.Add($panelResultados)
+
+        # Label para perguntar sobre copiar o painel
+        $labelResetSenha = New-Object System.Windows.Forms.Label
+        $labelResetSenha.Location = New-Object System.Drawing.Point(20,380)
+        $labelResetSenha.Size = New-Object System.Drawing.Size(210,15)
+        $labelResetSenha.Text = "Copiar as informações no painel?"
+        $form.Controls.Add($labelResetSenha)
+
+    # Botão para copiar os resultados
     $buttonCopiar = New-Object System.Windows.Forms.Button
-    $buttonCopiar.Location = New-Object System.Drawing.Point(330,20)
+    $buttonCopiar.Location = New-Object System.Drawing.Point(235,375)
     $buttonCopiar.Size = New-Object System.Drawing.Size(75,20) # largura / altura
     $buttonCopiar.Text = "Copiar"
     $form.Controls.Add($buttonCopiar)
 
-    # Criar um painel para exibir os resultados
-    $panelResultados = New-Object System.Windows.Forms.Panel
-    $panelResultados.Location = New-Object System.Drawing.Point(20,60)
-    $panelResultados.Size = New-Object System.Drawing.Size(400,300)  # Ajustado até o botão de copiar
-    $panelResultados.BorderStyle = [System.Windows.Forms.BorderStyle]::Fixed3D
-    $panelResultados.AutoScroll = $true
-    $form.Controls.Add($panelResultados)
+        # Label para perguntar sobre a redefinição de senha
+        $labelResetSenha = New-Object System.Windows.Forms.Label
+        $labelResetSenha.Location = New-Object System.Drawing.Point(20,400)
+        $labelResetSenha.Size = New-Object System.Drawing.Size(210,15)
+        $labelResetSenha.Text = "Resetar a senha dos NIFs encontrados?"
+        $form.Controls.Add($labelResetSenha)
 
-    # Criar uma label para perguntar sobre a redefinição de senha
-    $labelResetSenha = New-Object System.Windows.Forms.Label
-    $labelResetSenha.Location = New-Object System.Drawing.Point(20,380)
-    $labelResetSenha.Size = New-Object System.Drawing.Size(250,20)
-    $labelResetSenha.Text = "Deseja resetar a senha dos NIFs encontrados?"
-    $form.Controls.Add($labelResetSenha)
-
-    # Criar um botão para redefinir a senha
+    # Botão para redefinir a senha
     $buttonReset = New-Object System.Windows.Forms.Button
-    $buttonReset.Location = New-Object System.Drawing.Point(280,380)
+    $buttonReset.Location = New-Object System.Drawing.Point(235,400)
     $buttonReset.Size = New-Object System.Drawing.Size(75,20)
     $buttonReset.Text = "Reset"
     $form.Controls.Add($buttonReset)
 
 
-    # Função para exibir os resultados no painel (apenas os campos preenchidos)
-    function ExibirResultados {
-        $panelResultados.Controls.Clear()
-        $userInfo = $textBoxNIF.Text
-        $Usuarios = ProcessNIF -nif $userInfo
-        
-        if ($Usuarios.Count -eq 0) {
-            $resultLabel = New-Object System.Windows.Forms.Label
-            $resultLabel.Text = "Nenhum usuário encontrado."
-            $panelResultados.Controls.Add($resultLabel)
-        } else {
-            $yPosition = 0  # Para posicionar dinamicamente os resultados no painel
-            foreach ($Usuario in $Usuarios) {
-                $infoUsuario = @()
+
+    # Função para exibir os resultados no painel (como TextBox de múltiplas linhas)
+function ExibirResultados {
+    $panelResultados.Clear()
+    $userInfo = $textBoxNIF.Text
+    $global:Usuarios = ProcessNIF -nif $userInfo
+
+    if ($global:Usuarios.Count -eq 0) {
+        $panelResultados.Text = "Nenhum usuário encontrado."
+    } else {
+        $infoUsuarios = @()
+        foreach ($Usuario in $global:Usuarios) {
+            $infoUsuario = @()
 
                 if ($Usuario.SamAccountName) {
                     $infoUsuario += "NIF: $($Usuario.SamAccountName)"
@@ -91,19 +102,15 @@ function Create-GUI {
                     $infoUsuario += "E-mail: $($Usuario.EmailAddress)"
                 }
 
-                if ($infoUsuario.Count -gt 0) {
-                    $userLabel = New-Object System.Windows.Forms.Label
-                    $userLabel.Text = $infoUsuario -join "`n"
-                    $userLabel.AutoSize = $true
-                    $userLabel.Location = New-Object System.Drawing.Point(0, $yPosition)
-
-                    $panelResultados.Controls.Add($userLabel)
-                    # Atualizar a posição para o próximo resultado
-                    $yPosition += $userLabel.Height + 10
-                }
+            if ($infoUsuario.Count -gt 0) {
+                $infoUsuarios += ($infoUsuario -join "`r`n`r")
             }
         }
+        # Exibir todos os resultados na TextBox
+        $panelResultados.Text = $infoUsuarios -join "`n`n"  # Adicionar espaço entre os usuários
     }
+}
+
 
     # Adicionar evento de pressionar Enter na TextBox para pesquisar
     $textBoxNIF.Add_KeyDown({
@@ -122,7 +129,7 @@ function Create-GUI {
                 if ($Usuario.SamAccountName) {
                     $novaSenha = ConvertTo-SecureString -AsPlainText "Sesisenaisp@24" -Force
                     Set-ADAccountPassword -Identity $Usuario.SamAccountName -NewPassword $novaSenha -Reset
-                    Set-ADUser -Identity $Usuario.SamAccountName -ChangePasswordAtLogon $true
+                   Set-ADUser -Identity $Usuario.SamAccountName -ChangePasswordAtLogon $true
                     [System.Windows.Forms.MessageBox]::Show("Senha redefinida para: $($Usuario.DisplayName)")
                 }
             }
@@ -153,7 +160,7 @@ function ProcessNIF {
         $Usuarios = ExecuteScript -property "EmailAddress" -value $nif
     } elseif ($nif -match "\s") {
         $Usuarios = ExecuteScript -property "DisplayName" -value $nif
-    } elseif ($nif -match "sn" -or $nif -match "ss") {
+    } elseif ($nif -match "sn" -or $nif -match "ss" -or $nif -match "tc") {
         $Usuarios = ExecuteScript -property "SamAccountName" -value $nif
     } elseif ($nif -match "^\d+$") {
         $nifWithSN = "SN" + $nif
