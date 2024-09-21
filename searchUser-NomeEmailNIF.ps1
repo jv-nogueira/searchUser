@@ -18,12 +18,27 @@ function Create-GUI {
     $textBoxNIF = New-Object System.Windows.Forms.TextBox
     $textBoxNIF.Location = New-Object System.Drawing.Point(20,20) # 20p depois da borda
     $textBoxNIF.Size = New-Object System.Drawing.Size(310,20) # 300p de largura
-    $textBoxNIF.Text = "Digite o NIF, Email ou Nome Completo"
+    $textBoxNIF.Text = "Digite o NIF, Email ou Nome Completo e dê Enter"
     $form.Controls.Add($textBoxNIF)
 
-    # Painel para exibir os resultados
+
+        # Label para perguntar sobre copiar o painel
+        $labelResetSenha = New-Object System.Windows.Forms.Label
+        $labelResetSenha.Location = New-Object System.Drawing.Point(20,50)
+        $labelResetSenha.Size = New-Object System.Drawing.Size(210,15)
+        $labelResetSenha.Text = "Copiar o e-mail do usuário no painel?"
+        $form.Controls.Add($labelResetSenha)
+
+    # Botão para copiar os resultados
+    $buttonCopiar = New-Object System.Windows.Forms.Button
+    $buttonCopiar.Location = New-Object System.Drawing.Point(235,45)
+    $buttonCopiar.Size = New-Object System.Drawing.Size(75,20) # largura / altura
+    $buttonCopiar.Text = "Copiar"
+    $form.Controls.Add($buttonCopiar)
+
+        # Painel para exibir os resultados
     $panelResultados = New-Object System.Windows.Forms.TextBox
-    $panelResultados.Location = New-Object System.Drawing.Point(20,60)
+    $panelResultados.Location = New-Object System.Drawing.Point(20,70)
     $panelResultados.Size = New-Object System.Drawing.Size(310,300)  # Ajustado até o botão de copiar
     $panelResultados.BorderStyle = [System.Windows.Forms.BorderStyle]::Fixed3D
 
@@ -31,39 +46,25 @@ function Create-GUI {
     $panelResultados.Multiline = $true        # Permite múltiplas linhas
     $form.Controls.Add($panelResultados)
 
-        # Label para perguntar sobre copiar o painel
+        # Label para perguntar sobre a redefinição de senha
         $labelResetSenha = New-Object System.Windows.Forms.Label
         $labelResetSenha.Location = New-Object System.Drawing.Point(20,380)
         $labelResetSenha.Size = New-Object System.Drawing.Size(210,15)
-        $labelResetSenha.Text = "Copiar as informações no painel?"
-        $form.Controls.Add($labelResetSenha)
-
-    # Botão para copiar os resultados
-    $buttonCopiar = New-Object System.Windows.Forms.Button
-    $buttonCopiar.Location = New-Object System.Drawing.Point(235,375)
-    $buttonCopiar.Size = New-Object System.Drawing.Size(75,20) # largura / altura
-    $buttonCopiar.Text = "Copiar"
-    $form.Controls.Add($buttonCopiar)
-
-        # Label para perguntar sobre a redefinição de senha
-        $labelResetSenha = New-Object System.Windows.Forms.Label
-        $labelResetSenha.Location = New-Object System.Drawing.Point(20,400)
-        $labelResetSenha.Size = New-Object System.Drawing.Size(210,15)
-        $labelResetSenha.Text = "Resetar a senha dos NIFs encontrados?"
+        $labelResetSenha.Text = "Resetar a senha do usuário no painel?"
         $form.Controls.Add($labelResetSenha)
 
     # Botão para redefinir a senha
     $buttonReset = New-Object System.Windows.Forms.Button
-    $buttonReset.Location = New-Object System.Drawing.Point(235,400)
+    $buttonReset.Location = New-Object System.Drawing.Point(235,375)
     $buttonReset.Size = New-Object System.Drawing.Size(75,20)
     $buttonReset.Text = "Reset"
     $form.Controls.Add($buttonReset)
 
 
-
-    # Função para exibir os resultados no painel (como TextBox de múltiplas linhas)
+# Função para exibir os resultados no painel (como TextBox de múltiplas linhas)
 function ExibirResultados {
     $panelResultados.Clear()
+    $global:EmailAtual = ""  # Limpar o valor do e-mail global antes de cada nova pesquisa
     $userInfo = $textBoxNIF.Text
     $global:Usuarios = ProcessNIF -nif $userInfo
 
@@ -72,44 +73,50 @@ function ExibirResultados {
     } else {
         $infoUsuarios = @()
         foreach ($Usuario in $global:Usuarios) {
+            if ($Usuario.EmailAddress) {
+                $global:EmailAtual = $Usuario.EmailAddress  # Definir o e-mail global se encontrado
+            }
+
             $infoUsuario = @()
 
-                if ($Usuario.SamAccountName) {
-                    $infoUsuario += "NIF: $($Usuario.SamAccountName)"
-                }
-                if ($Usuario.DisplayName) {
-                    $infoUsuario += "Nome completo: $($Usuario.DisplayName)"
-                }
-                if ($Usuario.Office) {
-                    $infoUsuario += "Unidade: $($Usuario.Office)"
-                }
-                if ($Usuario.physicalDeliveryOfficeName) {
-                    $infoUsuario += "Escritório: $($Usuario.physicalDeliveryOfficeName)"
-                }
-                if ($Usuario.Department) {
-                    $infoUsuario += "Departamento: $($Usuario.Department)"
-                }
-                if ($Usuario.Manager -match "CN=([^,]+),") {
-                    $infoUsuario += "Superior imediato: $($matches[1])"
-                }
-                if ($Usuario.Title) {
-                    $infoUsuario += "Cargo: $($Usuario.Title)"
-                }
-                if ($Usuario.telephoneNumber) {
-                    $infoUsuario += "Telefone: $($Usuario.telephoneNumber)"
-                }
-                if ($Usuario.EmailAddress) {
-                    $infoUsuario += "E-mail: $($Usuario.EmailAddress)"
-                }
+            if ($Usuario.SamAccountName) {
+                $infoUsuario += "NIF: $($Usuario.SamAccountName)"
+            }
+            if ($Usuario.DisplayName) {
+                $infoUsuario += "Nome completo: $($Usuario.DisplayName)"
+            }
+            if ($Usuario.Office) {
+                $infoUsuario += "Unidade: $($Usuario.Office)"
+            }
+            if ($Usuario.physicalDeliveryOfficeName) {
+                $infoUsuario += "Escritório: $($Usuario.physicalDeliveryOfficeName)"
+            }
+            if ($Usuario.Department) {
+                $infoUsuario += "Departamento: $($Usuario.Department)"
+            }
+            if ($Usuario.Manager -match "CN=([^,]+),") {
+                $infoUsuario += "Superior imediato: $($matches[1])"
+            }
+            if ($Usuario.Title) {
+                $infoUsuario += "Cargo: $($Usuario.Title)"
+            }
+            if ($Usuario.telephoneNumber) {
+                $infoUsuario += "Telefone: $($Usuario.telephoneNumber)"
+            }
+            if ($Usuario.EmailAddress) {
+                $infoUsuario += "E-mail: $($Usuario.EmailAddress)"
+            }
 
             if ($infoUsuario.Count -gt 0) {
-                $infoUsuarios += ($infoUsuario -join "`r`n`r")
+                $infoUsuarios += ($infoUsuario -join "`r`n")
             }
         }
         # Exibir todos os resultados na TextBox
-        $panelResultados.Text = $infoUsuarios -join "`n`n"  # Adicionar espaço entre os usuários
+        $panelResultados.Text = $infoUsuarios -join "`n"  # Adicionar espaço entre os usuários
     }
 }
+
+
 
 
     # Adicionar evento de pressionar Enter na TextBox para pesquisar
@@ -123,6 +130,7 @@ function ExibirResultados {
 
     # Função para redefinir a senha com mensagem de confirmação
     $buttonReset.Add_Click({
+    if (![string]::IsNullOrEmpty($panelResultados.Text)) {
         $resetarSenha = [System.Windows.Forms.MessageBox]::Show("Deseja resetar a senha?", "Confirmação", [System.Windows.Forms.MessageBoxButtons]::YesNo)
         if ($resetarSenha -eq [System.Windows.Forms.DialogResult]::Yes) {
             foreach ($Usuario in $Usuarios) {
@@ -134,18 +142,22 @@ function ExibirResultados {
                 }
             }
         }
+        } else {
+        [System.Windows.Forms.MessageBox]::Show("Nenhuma informação no painel para resetar.", "Aviso")
+        }
     })
 
-    # Função para copiar o conteúdo do painel de resultados
-    $buttonCopiar.Add_Click({
-        $resultadoTexto = ""
-        foreach ($control in $panelResultados.Controls) {
-            if ($control.Text) {
-                $resultadoTexto += $control.Text + "`n`n"
-            }
-        }
-        [System.Windows.Forms.Clipboard]::SetText($resultadoTexto)  # Função de copiar 
-    })
+# Função para copiar o e-mail contido no painel de resultados
+$buttonCopiar.Add_Click({
+    if (![string]::IsNullOrEmpty($global:EmailAtual)) {
+        [System.Windows.Forms.Clipboard]::SetText($global:EmailAtual)  # Copiar o e-mail global
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("Nenhum e-mail encontrado para copiar.", "Aviso")
+    }
+})
+
+
+
 
     # Exibir a janela
     $form.ShowDialog()
