@@ -46,16 +46,16 @@ function Create-GUI {
     $panelResultados.Multiline = $true        # Permite múltiplas linhas
     $form.Controls.Add($panelResultados)
 
-        # Label para perguntar sobre a redefinição de senha
-        $labelResetSenha = New-Object System.Windows.Forms.Label
-        $labelResetSenha.Location = New-Object System.Drawing.Point(20,380)
-        $labelResetSenha.Size = New-Object System.Drawing.Size(210,15)
-        $labelResetSenha.Text = "Resetar a senha do usuário no painel?"
-        $form.Controls.Add($labelResetSenha)
+        # TextBox para permitir a entrada da nova senha
+        $textBoxResetSenha = New-Object System.Windows.Forms.TextBox
+        $textBoxResetSenha.Location = New-Object System.Drawing.Point(20,380)
+        $textBoxResetSenha.Size = New-Object System.Drawing.Size(210,20)
+        $textBoxResetSenha.Text = "Sesisenaisp@24" # Valor padrão
+        $form.Controls.Add($textBoxResetSenha)
 
     # Botão para redefinir a senha
     $buttonReset = New-Object System.Windows.Forms.Button
-    $buttonReset.Location = New-Object System.Drawing.Point(235,375)
+    $buttonReset.Location = New-Object System.Drawing.Point(235,380)
     $buttonReset.Size = New-Object System.Drawing.Size(75,20)
     $buttonReset.Text = "Reset"
     $form.Controls.Add($buttonReset)
@@ -128,24 +128,25 @@ function ExibirResultados {
         }
     })
 
-    # Função para redefinir a senha com mensagem de confirmação
-    $buttonReset.Add_Click({
+# Função para redefinir a senha com mensagem de confirmação
+$buttonReset.Add_Click({
     if (![string]::IsNullOrEmpty($panelResultados.Text)) {
-        $resetarSenha = [System.Windows.Forms.MessageBox]::Show("Deseja resetar a senha?", "Confirmação", [System.Windows.Forms.MessageBoxButtons]::YesNo)
-        if ($resetarSenha -eq [System.Windows.Forms.DialogResult]::Yes) {
-            foreach ($Usuario in $Usuarios) {
+        foreach ($Usuario in $Usuarios) {
+            $resetarSenha = [System.Windows.Forms.MessageBox]::Show("Deseja resetar a senha do(a) $($Usuario.DisplayName)?", "Confirmação", [System.Windows.Forms.MessageBoxButtons]::YesNo)
+            if ($resetarSenha -eq [System.Windows.Forms.DialogResult]::Yes) {
                 if ($Usuario.SamAccountName) {
-                    $novaSenha = ConvertTo-SecureString -AsPlainText "Sesisenaisp@24" -Force
+                    # A nova senha será baseada no valor da TextBox
+                    $novaSenha = ConvertTo-SecureString -AsPlainText $textBoxResetSenha.Text -Force
                     Set-ADAccountPassword -Identity $Usuario.SamAccountName -NewPassword $novaSenha -Reset
-                   Set-ADUser -Identity $Usuario.SamAccountName -ChangePasswordAtLogon $true
-                    [System.Windows.Forms.MessageBox]::Show("Senha redefinida para: $($Usuario.DisplayName)")
+                    Set-ADUser -Identity $Usuario.SamAccountName -ChangePasswordAtLogon $true
+                    [System.Windows.Forms.MessageBox]::Show("Senha redefinida para: $($textBoxResetSenha.Text)")
                 }
             }
         }
-        } else {
+    } else {
         [System.Windows.Forms.MessageBox]::Show("Nenhuma informação no painel para resetar.", "Aviso")
-        }
-    })
+    }
+})
 
 # Função para copiar o e-mail contido no painel de resultados
 $buttonCopiar.Add_Click({
