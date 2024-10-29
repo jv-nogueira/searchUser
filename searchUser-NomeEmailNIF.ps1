@@ -112,7 +112,7 @@ function ExibirResultados {
             }
         }
         # Exibir todos os resultados na TextBox
-        $panelResultados.Text = $infoUsuarios -join "`n"  # Adicionar espaço entre os usuários
+        $panelResultados.Text = $infoUsuarios -join "`r`n`r`n"  # Adicionar espaço entre os usuários
     }
 }
 
