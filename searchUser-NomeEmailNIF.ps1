@@ -119,14 +119,29 @@ function ExibirResultados {
 
 
 
-    # Adicionar evento de pressionar Enter na TextBox para pesquisar
-    $textBoxNIF.Add_KeyDown({
-        param($sender, $e)
-        if ($e.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {
-            ExibirResultados
-            $e.SuppressKeyPress = $true  # Evita o som do "bip" ao pressionar Enter
-        }
-    })
+# Adicionar evento de pressionar Enter na TextBox para pesquisar
+$textBoxNIF.Add_KeyDown({
+    param($sender, $e)
+    if ($e.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {
+        ExibirResultados
+        $e.SuppressKeyPress = $true  # Evita o som do "bip" ao pressionar Enter
+    }
+})
+
+# Adiciona um evento de clique ao painel de resultados
+$panelResultados.Add_Click({
+    # Se for o primeiro clique, seleciona todo o texto
+    if (-not $panelResultados.Tag) {
+        $panelResultados.SelectAll()
+        # Define a propriedade 'Tag' para marcar que o painel já foi clicado
+        $panelResultados.Tag = $true
+    }
+});
+# Adiciona um evento que remove a tag quando o painel é desfoca ao clicar na textBoxNIF
+$textBoxNIF.Add_Click({
+    # Define a propriedade 'Tag' para marcar que o painel não foi clicado
+    $panelResultados.Tag = $false 
+});
 
 # Função para redefinir a senha com mensagem de confirmação
 $buttonReset.Add_Click({
