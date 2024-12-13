@@ -117,6 +117,14 @@ function ExibirResultados {
 }
 
 
+# Evento para capturar o pressionamento da tecla "Enter" e remover espaços em branco do início e do final da textBox
+$textBoxNIF.Add_KeyDown({
+    if ($_.KeyCode -eq [System.Windows.Forms.Keys]::Enter) {
+        $trimmedText = $textBoxNIF.Text.Trim()
+        $textBoxNIF.Text = $trimmedText
+    }
+})
+
 
 
 # Adicionar evento de pressionar Enter na TextBox para pesquisar
