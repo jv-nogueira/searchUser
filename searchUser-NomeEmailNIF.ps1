@@ -145,10 +145,28 @@ $panelResultados.Add_Click({
         $panelResultados.Tag = $true
     }
 });
-# Adiciona um evento que remove a tag quando o painel desfoca ao clicar na textBoxNIF
+# Adiciona um evento que remove a tag ao clicar em cada controle específico
+$textBoxNIF.Add_Click({
+    $panelResultados.Tag = $false
+})
+$labelResetSenha.Add_Click({
+    $panelResultados.Tag = $false
+})
+$buttonCopiar.Add_Click({
+    $panelResultados.Tag = $false
+})
+$textBoxResetSenha.Add_Click({
+    $panelResultados.Tag = $false
+})
+$buttonReset.Add_Click({
+    $panelResultados.Tag = $false
+})
+
+# Adiciona também no evento de clique do formulário como um fallback
 $form.Add_Click({
-    $panelResultados.Tag = $false 
-});
+    $panelResultados.Tag = $false
+})
+
 
 # Função para redefinir a senha com mensagem de confirmação
 $buttonReset.Add_Click({
