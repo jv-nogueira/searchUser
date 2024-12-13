@@ -136,7 +136,7 @@ $textBoxNIF.Add_KeyDown({
     }
 })
 
-# Adiciona um evento de clique ao painel de resultados
+# Adiciona um evento de seleciona todo o texto ao clicar no painel de resultados
 $panelResultados.Add_Click({
     # Se for o primeiro clique, seleciona todo o texto
     if (-not $panelResultados.Tag) {
@@ -145,9 +145,8 @@ $panelResultados.Add_Click({
         $panelResultados.Tag = $true
     }
 });
-# Adiciona um evento que remove a tag quando o painel é desfoca ao clicar na textBoxNIF
-$textBoxNIF.Add_Click({
-    # Define a propriedade 'Tag' para marcar que o painel não foi clicado
+# Adiciona um evento que remove a tag quando o painel desfoca ao clicar na textBoxNIF
+$form.Add_Click({
     $panelResultados.Tag = $false 
 });
 
