@@ -50,7 +50,7 @@ function Create-GUI {
         $textBoxResetSenha = New-Object System.Windows.Forms.TextBox
         $textBoxResetSenha.Location = New-Object System.Drawing.Point(20,380)
         $textBoxResetSenha.Size = New-Object System.Drawing.Size(210,20)
-        $textBoxResetSenha.Text = "Sesisenaisp@24" # Valor padrão
+        $textBoxResetSenha.Text = "Sesisenaisp@25" # Valor padrão
         $form.Controls.Add($textBoxResetSenha)
 
     # Botão para redefinir a senha
